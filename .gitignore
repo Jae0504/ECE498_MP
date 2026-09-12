@@ -1,0 +1,21 @@
+# Local Python environments and bytecode
+.venv/
+venv/
+__pycache__/
+
+# Local build trees
+build/
+build-*/
+
+# Regenerated experiment and profiler output; keep directory placeholders.
+**/results/**
+!**/results/.gitkeep
+*.ncu-rep
+*.nsys-rep
+*.qdstrm
+*.sqlite
+*.nsight-cuprof-report
+
+# Instructor diagnostics are not part of the public student starter.
+mp2/H100_VALIDATION_REPORT.md
+mp2/INSTRUCTOR_*.md
