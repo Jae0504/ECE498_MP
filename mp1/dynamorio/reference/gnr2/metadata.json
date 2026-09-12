@@ -1,0 +1,32 @@
+{
+  "origin": "Actual complete experiment retained in results/dynamorio; no synthetic reference values.",
+  "recorded_start_utc": "2026-09-09T22:01:27+00:00",
+  "host": "gnr2",
+  "cpu_model": "Intel(R) Xeon(R) 6761P",
+  "threads": 8,
+  "cpu_set": "0,1,2,3,4,5,6,7",
+  "warmups": 2,
+  "iterations": 9,
+  "dynamorio_commit": "f50545b9fe31c536787de9f1e714fba99be7f810",
+  "compiler": "g++ (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0",
+  "cache_model_sha256": "404b18be63417117546e287e5eee643f6f34ed359a8beefc251a6263ccad87fe",
+  "metric_equality": "Only analytical quantities and deterministic outputs must agree exactly. Native timing, runtime instructions and address-dependent cache/reuse values can change across runs.",
+  "source_sha256": {
+    "mp1/cpu/roofline.cpp": "cfde3e9c085cebae1a0fad1a054654442a00eea02410bd1b6a00c2bba1410841",
+    "mp1/cpu/plot.cpp": "72fce5cd266ab087cfd8f1039a05e8b175b0eb467f3cc949d0d44d5112cb489d",
+    "mp1/cpu/gemv.cpp": "a14f9e1f31ec4075e4a9a45501aac8d2213686b837a12e2e2c0c5a9084013be5",
+    "mp1/cpu/reference.cpp": "34d7227eb8db7a8d3def5cd00187b5365df81c468b28e43a35e047c2dc1fe41e",
+    "mp1/cpu/tests.cpp": "cd8bacc709217fbb76e3dd20140b67bb3d6b35de1c24e3f9eb39152c78df3682",
+    "mp1/cpu/gemm.cpp": "6a55e34302f4b61307419c21bdb07cb8d7fda0b2c3e924e3f9a68fe6983726b3",
+    "mp1/cpu/main.cpp": "85b2c00c4e119f00deb5e32752f8dbe674b7d955abe11405a2d53d7dab3be5f8",
+    "mp1/cpu/attention.cpp": "69fbbb7a8c51dc26027cbfe1e87c416b82f6466701f2a7a85b49219a5aaa0027",
+    "mp1/include/roofline_plot.h": "02b524050178ae61675e8152c7dc445a6079fe3facd48a0be9c39c4c757de8fe",
+    "mp1/include/common.h": "a25baa9ee503e8728df369082e11a851cf4e0fb4607e8b4de95c4d68b4092497",
+    "mp1/include/timer.h": "a69eb86eeb019f0e72dff30ccbe105305f1e050f3b690bee37fd572b38104004",
+    "mp1/include/threading.h": "8b38d9294c572ea62aca46557d0e3a96a8ed02242fd2911abca5669403fade7e",
+    "mp1/include/csv_output.h": "8595491d3542ef8dc186064fbce8feb6d8e3c990efd0072f4bc25a841b4c3d6c",
+    "mp1/include/tinyllama_config.h": "ecac50c14ff1852160a8880d2de3101314dfc615c89bfc081c928f5f7a14c62b",
+    "mp1/include/metrics.h": "cb9bf291d084f28a2b328a05232f8b79af477f9697cb618c268b59a6b3267acc",
+    "mp1/include/cpu_kernels.h": "7a6c959c4049476a97b0fc2d785c5110ce6d4f5b7de3020fd5409d1dffecc31b"
+  }
+}

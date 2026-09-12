@@ -1,0 +1,4 @@
+#pragma once
+
+#define TLMP_PLOT_PYTHON R"tlmp(@Python3_EXECUTABLE@)tlmp"
+#define TLMP_PLOT_SCRIPT R"tlmp(@PROJECT_SOURCE_DIR@/scripts/generate_roofline.py)tlmp"

@@ -1,0 +1,25 @@
+# Python 3.12+ preserves the versions used by the original gnr2 experiment.
+# Python 3.9-3.11 uses pinned compatible plotting dependencies.
+# pip evaluates these markers using the project venv interpreter.
+contourpy==1.3.0; python_version < "3.12"
+contourpy==1.3.3; python_version >= "3.12"
+cycler==0.12.1
+fonttools==4.59.2; python_version < "3.12"
+fonttools==4.64.0; python_version >= "3.12"
+kiwisolver==1.4.7; python_version < "3.12"
+kiwisolver==1.5.1; python_version >= "3.12"
+matplotlib==3.9.4; python_version < "3.12"
+matplotlib==3.11.1; python_version >= "3.12"
+numpy==2.0.2; python_version < "3.12"
+numpy==2.5.3; python_version >= "3.12"
+packaging==25.0; python_version < "3.12"
+packaging==26.3; python_version >= "3.12"
+pillow==11.3.0; python_version < "3.12"
+pillow==12.3.0; python_version >= "3.12"
+pyparsing==3.2.3; python_version < "3.12"
+pyparsing==3.3.2; python_version >= "3.12"
+python-dateutil==2.9.0.post0
+six==1.17.0
+# Matplotlib and importlib-resources need these backports only on Python 3.9.
+importlib-resources==6.5.2; python_version < "3.10"
+zipp==3.23.0; python_version < "3.10"

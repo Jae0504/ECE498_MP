@@ -1,0 +1,2 @@
+# Headless PNG/PDF Roofline plots; NumPy is installed with Matplotlib.
+matplotlib>=3.5
