@@ -19,7 +19,7 @@ measurement commands, and the [MP1 report guide](mp1/REPORT_GUIDE.md) for the re
 
 ```bash
 git clone https://github.com/Jae0504/ECE498_MP.git
-cd ECE498_MPs
+cd ECE498_MP
 ```
 
 No `--recurse-submodules` option is needed. TinyLlama is not a build or runtime
