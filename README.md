@@ -18,7 +18,7 @@ measurement commands, and the [MP1 report guide](mp1/REPORT_GUIDE.md) for the re
 ## Clone
 
 ```bash
-git clone https://github.com/Jae0504/ECE498_MPs.git
+git clone https://github.com/Jae0504/ECE498_MP.git
 cd ECE498_MPs
 ```
 
