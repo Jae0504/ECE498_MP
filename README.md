@@ -1,12 +1,13 @@
-# ECE 498 MP1: CPU Architecture Profiling
+# ECE 498 Machine Problems
 
-This repository provides an architecture-focused machine problem built around
-TinyLlama-1.1B tensor dimensions:
+This repository contains the course machine problems:
 
-- [`mp1/`](mp1/): CPU timing on the provided EWS servers, analytical
-  operation/data-movement models, source-level data-access and attention
-  analysis, OpenMP scaling across 1/2/4/8 threads, DynamoRIO trace analysis,
-  cache simulation, and a common Roofline.
+- [MP1: CPU Architecture Profiling](mp1/README.md): native CPU timing,
+  data-access analysis, OpenMP scaling, DynamoRIO traces, cache simulation,
+  and Roofline analysis using TinyLlama-1.1B tensor dimensions.
+- [MP2: GPU Experiments on NVIDIA DGX Spark](mp2/README.md): run the same
+  kernels on the GPU, optimize them, and compare with MP1 CPU results and
+  optimized libraries.
 
 Intentionally naive kernel implementations are provided as the starting point.
 Students run a controlled baseline experiment, validate its results, and explain
