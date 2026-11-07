@@ -1,0 +1,9 @@
+{
+  "array_rows": 16,
+  "array_cols": 4,
+  "a_buffer_words": 3072,
+  "b_buffer_words": 1024,
+  "memory_lanes": 4,
+  "memory_wait_cycles": 0,
+  "clock_mhz": 100
+}

@@ -1,0 +1,6 @@
+{
+  "name": "decode",
+  "prompt": "AI chip",
+  "batch_size": 1,
+  "new_tokens": 9
+}

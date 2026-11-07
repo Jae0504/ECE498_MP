@@ -1,0 +1,7 @@
+{
+  "miniLLAMA": {
+    "revision": "542b3ae89bca7de773e5b048768e0d06f1598e80",
+    "patch": "patches/miniLLAMA.patch",
+    "paths": ["model.py", "utils.py", "train.py", "pre_process.py", "LICENSE", "README.md", "requirements.txt"]
+  }
+}

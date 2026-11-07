@@ -19,3 +19,11 @@ build-*/
 # Instructor diagnostics are not part of the public student starter.
 mp2/H100_VALIDATION_REPORT.md
 mp2/INSTRUCTOR_*.md
+
+# MP3/MP4 prepared runtime sources and test caches
+/mp3/.deps/
+.pytest_cache/
+
+# Private instructor solutions and demos
+/mp3/sample_answer/
+/mp4/sample_answer/

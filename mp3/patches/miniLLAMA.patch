@@ -1,0 +1,166 @@
+diff --git a/model.py b/model.py
+--- a/model.py
++++ b/model.py
+@@ -2,7 +2,10 @@
+ import torch.nn as nn
+ from torch.nn import functional as F
+ import math
+-from utils import create_masks
++try:
++    from .utils import create_masks
++except ImportError:  # Keep the original standalone training entry point usable.
++    from utils import create_masks
+ 
+ 
+ class RMSNorm(nn.Module):
+@@ -50,9 +53,9 @@
+ 
+     def forward(self, x, position_ids, seq_len=None):
+         # x: [bs, num_attention_heads, seq_len, head_size]
+-        freqs = (self.inv_freq[:, None].float().expand(-1, position_ids.shape[0]) @ (position_ids.float())).t()
++        freqs = position_ids.float().unsqueeze(-1) * self.inv_freq.float()
+         emb = torch.cat((freqs, freqs), dim=-1)
+-        return emb.cos().to(dtype=x.dtype), emb.sin().to(dtype=x.dtype)
++        return emb.cos().unsqueeze(1).to(x.dtype), emb.sin().unsqueeze(1).to(x.dtype)
+ 
+ 
+ def repeat_kv(hidden_states, n_rep):
+@@ -90,6 +93,9 @@
+         self.num_key_value_heads = config["num_key_value_heads"]
+         self.num_key_value_groups = self.num_heads // self.num_key_value_heads
+         self.attention_dropout = self.config["attention_dropout"]
++        # Optional teaching-harness observer; it records shapes, never tensor values.
++        self.matmul_observer = None
++        self.matmul_executor = None  # Optional numerical accelerator execution.
+ 
+         self.wq = nn.Linear(self.hidden_size, self.num_heads * self.head_dim, bias=False)
+         self.wk = nn.Linear(self.hidden_size, self.num_key_value_heads * self.head_dim, bias=False)
+@@ -103,10 +109,11 @@
+             base=config["rope_theta"]
+         )
+ 
+-    def forward(self, x, mask=None, training=False):
++    def forward(self, x, mask=None, training=False, past_key_value=None, use_cache=False):
+         B, T, C = x.size()  # batch size, sequence length, embedding dimensionality (n_embd)
+ 
+-        position_ids = torch.arange(T, device=x.device).repeat([B, 1]).long()
++        past_len = 0 if past_key_value is None else past_key_value[0].shape[2]
++        position_ids = torch.arange(past_len, past_len + T, device=x.device).expand(B, -1)
+         # print("++++++++",position_ids)
+ 
+         q = self.wq(x)
+@@ -122,21 +129,34 @@
+         cos, sin = self.rotary_emb(v, position_ids, seq_len=None)
+         q, k = apply_rotary_pos_emb(q, k, cos, sin, None)
+ 
++        if past_key_value is not None:
++            k = torch.cat((past_key_value[0], k), dim=2)
++            v = torch.cat((past_key_value[1], v), dim=2)
++        # Store unrepeated KV heads (GQA); repeat only for the attention computation.
++        present = (k, v) if use_cache else None
+         k = repeat_kv(k, self.num_key_value_groups)
+         v = repeat_kv(v, self.num_key_value_groups)
+ 
+-        matmul_qk = torch.matmul(q, k.transpose(2, 3)) / math.sqrt(self.head_dim)
++        product = (torch.matmul(q, k.transpose(2, 3)) if self.matmul_executor is None
++                   else self.matmul_executor("attention_qk", q, k.transpose(2, 3)))
++        matmul_qk = product / math.sqrt(self.head_dim)
++        if self.matmul_observer is not None:
++            self.matmul_observer("attention_qk", q, k.transpose(2, 3))
+         if mask is not None:
+             matmul_qk += (mask * -1e9)
+ 
+         attn_scores = F.softmax(matmul_qk, dim=-1)
+         # print("attn_scores", attn_scores)
+         attn_scores = F.dropout(attn_scores, p=self.attention_dropout, training=self.training)
+-        y = torch.matmul(attn_scores, v)  # Weighted sum
++        y = (torch.matmul(attn_scores, v) if self.matmul_executor is None
++             else self.matmul_executor("attention_av", attn_scores, v))
++        if self.matmul_observer is not None:
++            self.matmul_observer("attention_av", attn_scores, v)
+ 
+         y = y.transpose(1, 2).contiguous().view(B, T, C)
+ 
+-        return self.c_proj(y)
++        output = self.c_proj(y)
++        return (output, present) if use_cache else output
+ 
+ 
+ class DecoderBlock(nn.Module):
+@@ -148,10 +168,14 @@
+         self.ln_2 = RMSNorm(config["n_embd"], eps=config["eps"])
+         self.mlp = FeedForward(config)
+ 
+-    def forward(self, x, mask):
+-        x = x + self.attn(self.ln_1(x), mask=mask)
++    def forward(self, x, mask, past_key_value=None, use_cache=False):
++        attn = self.attn(self.ln_1(x), mask=mask,
++                         past_key_value=past_key_value, use_cache=use_cache)
++        if use_cache:
++            attn, present = attn
++        x = x + attn
+         x = x + self.mlp(self.ln_2(x))
+-        return x
++        return (x, present) if use_cache else x
+ 
+ 
+ class LLAMA(nn.Module):
+@@ -186,19 +210,42 @@
+             n_params -= self.transformer.embedding_layer.weight.numel()
+         return n_params
+ 
+-    def forward(self, idx, targets=None):
++    def forward(self, idx, targets=None, past_key_values=None, use_cache=False):
+         device = idx.device
+         b, t = idx.size()
+ 
+-        mask = create_masks(idx, device)  # Creating mask to handle left to right attention and mask
+-        # print("mask+++++++++++++", mask)
+-
+-        pos = torch.arange(0, t, dtype=torch.long, device=device)  # shape (t)
++        if idx.ndim != 2 or t == 0:
++            raise ValueError("idx must contain at least one token per sequence")
++        past_len = 0
++        if past_key_values is not None:
++            if len(past_key_values) != len(self.transformer.h):
++                raise ValueError("one KV-cache entry is required per decoder block")
++            past_len = past_key_values[0][0].shape[2]
++            if any(k.shape[2] != past_len or v.shape[2] != past_len
++                   for k, v in past_key_values):
++                raise ValueError("KV-cache lengths must agree across layers")
++        if past_len + t > self.config["block_size"]:
++            raise ValueError("sequence exceeds the configured context length")
++        if use_cache or past_key_values is not None:
++            if targets is not None or (idx == 0).any():
++                raise ValueError("cached inference requires unpadded inputs and no targets")
++            queries = torch.arange(past_len, past_len + t, device=device)
++            keys = torch.arange(past_len + t, device=device)
++            mask = (keys[None, :] > queries[:, None]).to(torch.float32)[None, None]
++        else:
++            mask = create_masks(idx, device)
+ 
+         x = self.transformer.embedding_layer(idx)  # token embeddings of shape (b, t, embd)
+ 
+-        for decoder_block in self.transformer.h:
+-            x = decoder_block(x, mask)
++        presents = []
++        for i, decoder_block in enumerate(self.transformer.h):
++            past = None if past_key_values is None else past_key_values[i]
++            result = decoder_block(x, mask, past_key_value=past, use_cache=use_cache)
++            if use_cache:
++                x, present = result
++                presents.append(present)
++            else:
++                x = result
+         x = self.transformer.layer_norm(x)
+ 
+         if targets is not None:
+@@ -210,7 +257,7 @@
+             logits = self.lm_head(x[:, [-1], :])  # note: using list [-1] to preserve the time dim
+             loss = None
+ 
+-        return logits, loss
++        return (logits, loss, tuple(presents)) if use_cache else (logits, loss)
+ 
+     def _init_weights(self, module):
+         if isinstance(module, nn.Linear):

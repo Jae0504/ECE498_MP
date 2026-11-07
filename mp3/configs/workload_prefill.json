@@ -1,0 +1,6 @@
+{
+  "name": "prefill",
+  "prompt": "An accelerator maps matrix operations onto processing elements.",
+  "batch_size": 1,
+  "new_tokens": 1
+}

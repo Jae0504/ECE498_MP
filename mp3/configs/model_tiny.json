@@ -1,0 +1,9 @@
+{
+  "hidden_size": 32,
+  "num_layers": 1,
+  "num_heads": 4,
+  "num_kv_heads": 2,
+  "max_seq_len": 256,
+  "vocab_size": 260,
+  "seed": 498
+}
